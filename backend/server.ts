@@ -5,6 +5,8 @@ import fastify from "fastify";
 import { createClient } from "@supabase/supabase-js";
 import { Database } from "./lib/database.types";
 
+import posts from "./routes/posts";
+
 const supabaseUrl =
     process.env.NODE_ENV === "dev"
         ? (process.env.SUPABASE_URL_DEV as string)
@@ -20,7 +22,9 @@ const supabase = createClient<Database>(supabaseUrl, supabaseKey);
 
 const server = fastify();
 
-server.get("/ping", async (request, response) => {
+server.register(posts, { prefix: "/posts" });
+
+server.get("/ping", async (_request, _response) => {
     return "pong\n";
 });
 
