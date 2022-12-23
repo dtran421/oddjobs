@@ -12,6 +12,8 @@ Notes on the Fastify/Supabase backend for **oddjobs**.
 
 ## Supabase Management
 
+More information can be found here: [Supabase Local Development](https://supabase.com/docs/guides/resources/supabase-cli/local-development).
+
 -   To start the local dev database server:
 
 ```sh

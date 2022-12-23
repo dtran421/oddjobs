@@ -4,7 +4,5 @@ export interface Post {
     position: string;
     date: string;
     start_time: string;
-    shift_length: {
-        hours: number;
-    };
+    shift_length: string;
 }

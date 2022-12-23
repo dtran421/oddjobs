@@ -1,5 +1,5 @@
 import * as dotenv from "dotenv";
-dotenv.config();
+dotenv.config({ path: "./config/.env" });
 
 import fastify from "fastify";
 import { createClient } from "@supabase/supabase-js";

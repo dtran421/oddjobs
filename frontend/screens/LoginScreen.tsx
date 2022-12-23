@@ -1,7 +1,21 @@
 import { useState } from "react";
 import { Alert, StyleSheet, View } from "react-native";
-import { supabase } from "../lib/supabase";
 import { Button, Input } from "@rneui/themed";
+import { supabase } from "../lib/supabase";
+
+import { useThemeColor } from "../components/Themed";
+import useColorScheme from "../hooks/useColorScheme";
+
+const styles = StyleSheet.create({
+    verticallySpaced: {
+        paddingTop: 4,
+        paddingBottom: 4,
+        alignSelf: "stretch"
+    },
+    mt20: {
+        marginTop: 20
+    }
+});
 
 const Login = () => {
     const [email, setEmail] = useState("");
@@ -33,25 +47,39 @@ const Login = () => {
     };
 
     return (
-        <View>
+        <View
+            style={{
+                height: "100%",
+                backgroundColor: useThemeColor({}, "background"),
+                padding: 12
+            }}
+        >
             <View style={[styles.verticallySpaced, styles.mt20]}>
                 <Input
                     label="Email"
-                    leftIcon={{ type: "font-awesome", name: "envelope" }}
+                    leftIcon={{
+                        type: "feather",
+                        name: "mail",
+                        color: useThemeColor({}, "text")
+                    }}
+                    leftIconContainerStyle={{ marginRight: 10 }}
                     onChangeText={(text) => setEmail(text)}
                     value={email}
-                    placeholder="email@address.com"
                     autoCapitalize={"none"}
                 />
             </View>
             <View style={styles.verticallySpaced}>
                 <Input
                     label="Password"
-                    leftIcon={{ type: "font-awesome", name: "lock" }}
+                    leftIcon={{
+                        type: "feather",
+                        name: "lock",
+                        color: useThemeColor({}, "text")
+                    }}
+                    leftIconContainerStyle={{ marginRight: 10 }}
                     onChangeText={(text) => setPassword(text)}
                     value={password}
                     secureTextEntry={true}
-                    placeholder="Password"
                     autoCapitalize={"none"}
                 />
             </View>
@@ -60,6 +88,10 @@ const Login = () => {
                     title="Sign in"
                     disabled={loading}
                     onPress={() => signInWithEmail()}
+                    buttonStyle={{ backgroundColor: useThemeColor({}, "tint") }}
+                    titleStyle={{
+                        color: useColorScheme() === "dark" ? "black" : "white"
+                    }}
                 />
             </View>
             <View style={styles.verticallySpaced}>
@@ -67,25 +99,14 @@ const Login = () => {
                     title="Sign up"
                     disabled={loading}
                     onPress={() => signUpWithEmail()}
+                    buttonStyle={{ backgroundColor: useThemeColor({}, "tint") }}
+                    titleStyle={{
+                        color: useColorScheme() === "dark" ? "black" : "white"
+                    }}
                 />
             </View>
         </View>
     );
 };
-
-const styles = StyleSheet.create({
-    container: {
-        marginTop: 40,
-        padding: 12
-    },
-    verticallySpaced: {
-        paddingTop: 4,
-        paddingBottom: 4,
-        alignSelf: "stretch"
-    },
-    mt20: {
-        marginTop: 20
-    }
-});
 
 export default Login;
