@@ -5,6 +5,7 @@ import { supabase } from "../lib/supabase";
 
 import { View, useThemeColor } from "../components/Themed";
 import useColorScheme from "../hooks/useColorScheme";
+import { StyledText } from "../components/StyledText";
 
 const styles = StyleSheet.create({
     verticallySpaced: {
@@ -50,11 +51,17 @@ const Login = () => {
         <View
             style={{
                 height: "100%",
+                justifyContent: "center",
                 backgroundColor: useThemeColor({}, "background"),
-                padding: 12
+                paddingHorizontal: 12
             }}
         >
-            <View style={[styles.verticallySpaced, styles.mt20]}>
+            <StyledText
+                style={{ textAlign: "center", fontSize: 48, fontWeight: "700" }}
+            >
+                Login
+            </StyledText>
+            <View style={styles.verticallySpaced}>
                 <Input
                     label="Email"
                     leftIcon={{
@@ -62,6 +69,7 @@ const Login = () => {
                         name: "mail",
                         color: useThemeColor({}, "text")
                     }}
+                    inputStyle={{ color: useThemeColor({}, "text") }}
                     leftIconContainerStyle={{ marginRight: 10 }}
                     onChangeText={(text) => setEmail(text)}
                     value={email}
@@ -77,6 +85,7 @@ const Login = () => {
                         color: useThemeColor({}, "text")
                     }}
                     leftIconContainerStyle={{ marginRight: 10 }}
+                    inputStyle={{ color: useThemeColor({}, "text") }}
                     onChangeText={(text) => setPassword(text)}
                     value={password}
                     secureTextEntry={true}

@@ -1,14 +1,16 @@
-import { useEffect, useState } from "react";
-import { StyleSheet } from "react-native";
+import { useContext, useEffect, useState } from "react";
+import { Alert, StyleSheet } from "react-native";
 import { Post } from "../lib/schema";
 
-import { RootStackScreenProps } from "../types";
+import { RootStackParamList, RootStackScreenProps } from "../types";
 import { StyledText } from "../components/StyledText";
 import { formatDate, formatShiftLength, formatStartTime } from "../lib/utils";
 import { Feather } from "@expo/vector-icons";
 import { View, useThemeColor } from "../components/Themed";
 import { Button, Chip } from "@rneui/themed";
 import { LinearGradient } from "expo-linear-gradient";
+import { AuthContext } from "../lib/AuthContext";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 const styles = StyleSheet.create({
     container: {
@@ -35,9 +37,36 @@ const styles = StyleSheet.create({
     }
 });
 
+const signUpForPost = async (
+    navigation: NativeStackNavigationProp<RootStackParamList, "Post">,
+    userId: string,
+    postId: string
+) => {
+    const response = await fetch(`http://127.0.0.1:8000/posts/${postId}`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            userId,
+            postId
+        })
+    });
+
+    if (response.status != 200) {
+        console.error(response.text);
+        Alert.alert("Something went wrong with signup!");
+        return;
+    }
+
+    navigation.goBack();
+};
+
 const PostScreen = ({ route, navigation }: RootStackScreenProps<"Post">) => {
     const { postId } = route.params;
+    const { session } = useContext(AuthContext);
 
+    const [isLoading, setLoading] = useState(false);
     const [hasFetched, setFetched] = useState(false);
     const [postInfo, setPostInfo] = useState<Post>({
         id: "",
@@ -69,6 +98,18 @@ const PostScreen = ({ route, navigation }: RootStackScreenProps<"Post">) => {
             })();
         }
     }, [hasFetched, postInfo]);
+
+    const postSignUp = async () => {
+        if (!session) {
+            console.error("user not signed in!");
+            navigation.navigate("Login");
+            return;
+        }
+
+        setLoading(true);
+        await signUpForPost(navigation, session.user.id, postId);
+        setLoading(false);
+    };
 
     const {
         company,
@@ -150,6 +191,8 @@ const PostScreen = ({ route, navigation }: RootStackScreenProps<"Post">) => {
                     buttonStyle={{
                         borderRadius: 6
                     }}
+                    loading={isLoading}
+                    onPress={() => postSignUp()}
                 >
                     <Feather
                         name="edit-3"

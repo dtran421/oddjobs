@@ -46,4 +46,20 @@ SET company_id = (
         SELECT id
         FROM public.companies
         WHERE company_name = posts.company
-    )
+    );
+
+-- inserts a row into public.users
+CREATE OR REPLACE FUNCTION public.handle_new_user() RETURNS TRIGGER AS $$ BEGIN
+INSERT INTO public.users (id, email)
+VALUES (new.id, new.email);
+
+RETURN new;
+
+END;
+
+$$ language plpgsql SECURITY DEFINER;
+
+-- trigger the function every time a user is created
+CREATE TRIGGER on_auth_user_created
+AFTER
+INSERT ON auth.users FOR each ROW EXECUTE PROCEDURE public.handle_new_user();

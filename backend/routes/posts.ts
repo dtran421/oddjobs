@@ -1,5 +1,4 @@
 import { FastifyInstance } from "fastify";
-import { REPL_MODE_SLOPPY } from "repl";
 import { PostRequestParams } from "../lib/types";
 
 import { supabase } from "../server";
@@ -9,7 +8,9 @@ const posts = (server: FastifyInstance, _: any, done: () => void) => {
         const { data: posts, error } = await supabase.from("posts").select();
 
         if (error) {
-            console.error(`[${new Date().toISOString()}] error: fetching post`);
+            console.error(
+                `[${new Date().toISOString()}] error: fetching posts`
+            );
             reply.code(500).send("error: fetching posts");
         }
 

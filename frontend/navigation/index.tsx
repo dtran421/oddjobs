@@ -1,9 +1,4 @@
-/**
- * If you are not familiar with React Navigation, refer to the "Fundamentals" guide:
- * https://reactnavigation.org/docs/getting-started
- *
- */
-
+import { useState, useEffect, useMemo } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import {
     NavigationContainer,
@@ -13,10 +8,11 @@ import {
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { ColorSchemeName, Pressable } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import { Session } from "@supabase/supabase-js";
 
 import Colors from "../constants/Colors";
 import useColorScheme from "../hooks/useColorScheme";
-import LoginScreen from "../screens/LoginScreen";
+import AccountScreen from "../screens/AccountScreen";
 import ModalScreen from "../screens/ModalScreen";
 import NotFoundScreen from "../screens/NotFoundScreen";
 import HomeScreen from "../screens/HomeScreen";
@@ -28,12 +24,11 @@ import {
     RootTabScreenProps
 } from "../types";
 import LinkingConfiguration from "./LinkingConfiguration";
+import { supabase } from "../lib/supabase";
+import Login from "../screens/LoginScreen";
+import { AuthContext } from "../lib/AuthContext";
 
-export default function Navigation({
-    colorScheme
-}: {
-    colorScheme: ColorSchemeName;
-}) {
+const Navigation = ({ colorScheme }: { colorScheme: ColorSchemeName }) => {
     return (
         <NavigationContainer
             linking={LinkingConfiguration}
@@ -42,34 +37,66 @@ export default function Navigation({
             <RootNavigator />
         </NavigationContainer>
     );
-}
+};
 
-/**
- * A root stack navigator is often used for displaying modals on top of all other content.
- * https://reactnavigation.org/docs/modal
- */
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-function RootNavigator() {
-    return (
-        <Stack.Navigator>
-            <Stack.Screen
-                name="Root"
-                component={BottomTabNavigator}
-                options={{ headerShown: false }}
-            />
-            <Stack.Screen name="Post" component={PostScreen} />
-            <Stack.Screen
-                name="NotFound"
-                component={NotFoundScreen}
-                options={{ title: "Oops!" }}
-            />
-            <Stack.Group screenOptions={{ presentation: "modal" }}>
-                <Stack.Screen name="Modal" component={ModalScreen} />
-            </Stack.Group>
-        </Stack.Navigator>
+const RootNavigator = () => {
+    const [session, setSession] = useState<Session | null>(null);
+
+    useEffect(() => {
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            setSession(session);
+        });
+
+        supabase.auth.onAuthStateChange((_event, session) => {
+            setSession(session);
+        });
+    }, []);
+
+    const authContext = useMemo(
+        () => ({
+            session
+        }),
+        [session]
     );
-}
+
+    return (
+        <AuthContext.Provider value={authContext}>
+            <Stack.Navigator>
+                {session?.user ? (
+                    <>
+                        <Stack.Screen
+                            name="Root"
+                            component={BottomTabNavigator}
+                            options={{ headerShown: false }}
+                        />
+                        <Stack.Screen name="Post" component={PostScreen} />
+                    </>
+                ) : (
+                    <Stack.Screen
+                        name="Login"
+                        component={Login}
+                        options={{
+                            headerShown: false,
+                            animationTypeForReplace: session?.user
+                                ? "pop"
+                                : "push"
+                        }}
+                    />
+                )}
+                <Stack.Screen
+                    name="NotFound"
+                    component={NotFoundScreen}
+                    options={{ title: "Oops!" }}
+                />
+                <Stack.Group screenOptions={{ presentation: "modal" }}>
+                    <Stack.Screen name="Modal" component={ModalScreen} />
+                </Stack.Group>
+            </Stack.Navigator>
+        </AuthContext.Provider>
+    );
+};
 
 /**
  * A bottom tab navigator displays tab buttons on the bottom of the display to switch screens.
@@ -77,7 +104,7 @@ function RootNavigator() {
  */
 const BottomTab = createBottomTabNavigator<RootTabParamList>();
 
-function BottomTabNavigator() {
+const BottomTabNavigator = () => {
     const colorScheme = useColorScheme();
 
     return (
@@ -123,25 +150,26 @@ function BottomTabNavigator() {
                 }}
             />
             <BottomTab.Screen
-                name="Login"
-                component={LoginScreen}
+                name="Account"
+                component={AccountScreen}
                 options={{
-                    title: "Login",
+                    title: "Account",
                     tabBarIcon: ({ color }) => (
                         <TabBarIcon name="user" color={color} />
-                    )
+                    ),
+                    headerShown: false
                 }}
             />
         </BottomTab.Navigator>
     );
-}
+};
 
 /**
  * You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
  */
-function TabBarIcon(props: {
+const TabBarIcon = (props: {
     name: React.ComponentProps<typeof Feather>["name"];
     color: string;
-}) {
-    return <Feather size={30} style={{ marginBottom: -3 }} {...props} />;
-}
+}) => <Feather size={30} style={{ marginBottom: -3 }} {...props} />;
+
+export default Navigation;
