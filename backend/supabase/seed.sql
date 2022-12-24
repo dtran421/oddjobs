@@ -1,3 +1,9 @@
+INSERT INTO public.companies (company_name)
+VALUES ('Walmart'),
+    ('Acme Inc.'),
+    ('XYZ Corp.'),
+    ('ACE Hardware');
+
 INSERT INTO public.posts (
         company,
         position,
@@ -34,3 +40,10 @@ VALUES (
         'Meeting with potential clients and demonstrating products at XYZ Corp.',
         '$20/hour'
     );
+
+UPDATE public.posts
+SET company_id = (
+        SELECT id
+        FROM public.companies
+        WHERE company_name = posts.company
+    )

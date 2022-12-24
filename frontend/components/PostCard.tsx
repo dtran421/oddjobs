@@ -1,87 +1,91 @@
 import React from "react";
-import { View } from "react-native";
-import { Card, Text } from "@rneui/themed";
+import { TouchableOpacity } from "react-native";
+import { Card } from "@rneui/themed";
 import { LinearGradient } from "expo-linear-gradient";
-import moment from "moment";
+import { useNavigation } from "@react-navigation/native";
 
 import { Post } from "../lib/schema";
-import { useThemeColor } from "./Themed";
-
-const formatDate = (dateTimestamp: string): string => {
-    const startDate = moment(dateTimestamp, "YYYY-MM-DDTHH:mm:ss.SSSZ");
-
-    return startDate.format("dddd, MMMM Do, YYYY");
-};
-
-const formatStartTime = (startTime: string): string => {
-    const date = moment(startTime, "HH:mm:ssZZ");
-    return date.format("h:mm A");
-};
-
-const formatShiftLength = (shiftLengthTimestamp: string): string => {
-    const [hours, minutes, seconds] = shiftLengthTimestamp.split(":");
-
-    const shiftLength = moment.duration({
-        hours: parseInt(hours),
-        minutes: parseInt(minutes),
-        seconds: parseInt(seconds)
-    });
-
-    const hrs = shiftLength.hours(),
-        mins = shiftLength.minutes();
-
-    let formattedShiftLength = `${hrs} hour${hrs > 1 ? "s" : ""}`;
-    if (mins) formattedShiftLength += ` ${mins} mins`;
-
-    return formattedShiftLength;
-};
+import { View, useThemeColor } from "./Themed";
+import { StyledText } from "./StyledText";
+import { formatDate, formatStartTime, formatShiftLength } from "../lib/utils";
 
 const PostCard = ({
+    id,
     company,
     position,
     date,
     start_time: startTime,
     shift_length: shiftLength
-}: Post) => (
-    <Card
-        containerStyle={{
-            borderColor: useThemeColor({}, "background"),
-            borderRadius: 8,
-            padding: 0
-        }}
-    >
-        <LinearGradient
-            start={[0, 1]}
-            end={[1, 0]}
-            colors={["#2cf933", "#16d53c", "#1ab00e"]}
-            style={{
-                borderRadius: 8,
-                padding: 20
-            }}
+}: Post) => {
+    const navigation = useNavigation();
+
+    return (
+        <TouchableOpacity
+            onPress={() => navigation.navigate("Post", { postId: id })}
         >
-            <View>
-                <View style={{ marginBottom: 14 }}>
-                    <Text style={{ fontWeight: "700" }} h3>
-                        {position}
-                    </Text>
-                    <Text style={{ fontWeight: "500" }} h4>
-                        {company}
-                    </Text>
-                </View>
-                <Text style={{ marginBottom: 4 }}>{formatDate(date)}</Text>
-                <View
+            <Card
+                containerStyle={{
+                    borderColor: useThemeColor({}, "background"),
+                    borderRadius: 8,
+                    padding: 0,
+                    marginTop: 20
+                }}
+            >
+                <LinearGradient
+                    start={[0, 1]}
+                    end={[1, 0]}
+                    colors={["#2cf933", "#16d53c", "#1ab00e"]}
                     style={{
-                        display: "flex",
-                        flexDirection: "row",
-                        justifyContent: "space-between"
+                        borderRadius: 8,
+                        padding: 20
                     }}
                 >
-                    <Text>{formatStartTime(startTime)}</Text>
-                    <Text>{formatShiftLength(shiftLength)}</Text>
-                </View>
-            </View>
-        </LinearGradient>
-    </Card>
-);
+                    <View style={{ backgroundColor: "transparent" }}>
+                        <View
+                            style={{
+                                backgroundColor: "transparent",
+                                marginBottom: 14
+                            }}
+                        >
+                            <StyledText
+                                darkColor="black"
+                                style={{ fontSize: 26, fontWeight: "700" }}
+                            >
+                                {position}
+                            </StyledText>
+                            <StyledText
+                                darkColor="black"
+                                style={{ fontSize: 20, fontWeight: "500" }}
+                            >
+                                {company}
+                            </StyledText>
+                        </View>
+                        <StyledText
+                            darkColor="black"
+                            style={{ marginBottom: 4 }}
+                        >
+                            {formatDate(date)}
+                        </StyledText>
+                        <View
+                            style={{
+                                display: "flex",
+                                flexDirection: "row",
+                                justifyContent: "space-between",
+                                backgroundColor: "transparent"
+                            }}
+                        >
+                            <StyledText darkColor="black">
+                                {formatStartTime(startTime)}
+                            </StyledText>
+                            <StyledText darkColor="black">
+                                {formatShiftLength(shiftLength)}
+                            </StyledText>
+                        </View>
+                    </View>
+                </LinearGradient>
+            </Card>
+        </TouchableOpacity>
+    );
+};
 
 export default PostCard;

@@ -5,4 +5,7 @@ export interface Post {
     date: string;
     start_time: string;
     shift_length: string;
+    description: string;
+    pay_rate: string;
+    active: boolean;
 }

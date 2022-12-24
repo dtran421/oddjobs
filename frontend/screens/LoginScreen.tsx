@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { Alert, StyleSheet, View } from "react-native";
+import { Alert, StyleSheet } from "react-native";
 import { Button, Input } from "@rneui/themed";
 import { supabase } from "../lib/supabase";
 
-import { useThemeColor } from "../components/Themed";
+import { View, useThemeColor } from "../components/Themed";
 import useColorScheme from "../hooks/useColorScheme";
 
 const styles = StyleSheet.create({

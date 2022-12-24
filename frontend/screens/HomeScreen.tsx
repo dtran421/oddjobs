@@ -1,17 +1,17 @@
-import { useEffect, useState } from "react";
-import { StyleSheet, FlatList } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import { StyleSheet, ScrollView, RefreshControl } from "react-native";
 
 import PostCard from "../components/PostCard";
-import { Text, View } from "../components/Themed";
 import { RootTabScreenProps } from "../types";
 import { Post } from "../lib/schema";
+import { View } from "../components/Themed";
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         alignItems: "center",
         justifyContent: "center",
-        paddingTop: 10
+        backgroundColor: "transparent"
     },
     title: {
         fontSize: 20,
@@ -25,27 +25,50 @@ const styles = StyleSheet.create({
 });
 
 const HomeScreen = ({ navigation }: RootTabScreenProps<"Home">) => {
-    const [posts, setPosts] = useState([]);
+    const [hasFetched, setFetched] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
+    const [posts, setPosts] = useState<Post[]>([]);
+
+    const onRefresh = useCallback(() => {
+        setRefreshing(true);
+    }, []);
 
     useEffect(() => {
-        if (!posts.length)
+        if (!hasFetched || refreshing) {
+            setFetched(true);
             (async () => {
                 const response = await fetch("http://127.0.0.1:8000/posts");
-                const data = await response.json();
+                if (response.status != 200) {
+                    console.error(response.text);
+                    setFetched(false);
+                }
 
-                if (data) setPosts(data);
+                const data = await response.json();
+                setPosts(data);
+                setFetched(true);
+                setRefreshing(false);
             })();
-    }, [posts]);
+        }
+    }, [hasFetched, refreshing, posts]);
 
     return (
-        <View style={styles.container}>
-            <FlatList
-                data={posts}
-                renderItem={({ item }) => <PostCard {...item} />}
-                keyExtractor={(item: Post) => item.id}
-                ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
-            />
-        </View>
+        <ScrollView
+            contentContainerStyle={styles.container}
+            refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+        >
+            <View
+                style={{
+                    width: "100%",
+                    flex: 1
+                }}
+            >
+                {posts.map((post) => (
+                    <PostCard key={post.id} {...post} />
+                ))}
+            </View>
+        </ScrollView>
     );
 };
 

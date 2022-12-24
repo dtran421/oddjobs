@@ -40,6 +40,8 @@ module.exports = {
         "import/extensions": ["error", "never"],
         "react/prop-types": 0,
         "no-shadow": "off",
-        "@typescript-eslint/no-shadow": ["error"]
+        "@typescript-eslint/no-shadow": ["error"],
+        "react-hooks/rules-of-hooks": "error",
+        "react-hooks/exhaustive-deps": "error"
     }
-}
+};
