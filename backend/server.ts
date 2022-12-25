@@ -1,9 +1,13 @@
 import * as dotenv from "dotenv";
-dotenv.config();
+dotenv.config({ path: "./config/.env" });
 
 import fastify from "fastify";
 import { createClient } from "@supabase/supabase-js";
+
 import { Database } from "./lib/database.types";
+import shifts from "./routes/shifts";
+import shift from "./routes/shift";
+import accounts from "./routes/accounts";
 
 const supabaseUrl =
     process.env.NODE_ENV === "dev"
@@ -15,12 +19,15 @@ const supabaseKey =
         ? (process.env.SUPABASE_KEY_DEV as string)
         : (process.env.SUPABASE_KEY_PROD as string);
 
-// Create a single supabase client for interacting with your database
 const supabase = createClient<Database>(supabaseUrl, supabaseKey);
 
 const server = fastify();
 
-server.get("/ping", async (request, response) => {
+server.register(accounts, { prefix: "/accounts" });
+server.register(shifts, { prefix: "/shifts" });
+server.register(shift, { prefix: "/shift" });
+
+server.get("/ping", async (_request, _reply) => {
     return "pong\n";
 });
 
@@ -29,7 +36,7 @@ server.listen({ port: 8000 }, (err, address) => {
         console.error(err);
         process.exit(1);
     }
-    console.log(`Server listening at ${address}`);
+    console.info(`Server listening at ${address}`);
 });
 
 export { supabase, server };
