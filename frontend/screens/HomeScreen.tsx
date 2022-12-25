@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
-import { StyleSheet, ScrollView, RefreshControl } from "react-native";
+import { StyleSheet, ScrollView, RefreshControl, Alert } from "react-native";
 
-import PostCard from "../components/PostCard";
+import ShiftCard from "../components/ShiftCard";
 import { RootTabScreenProps } from "../types";
-import { Post } from "../lib/schema";
+import { Shift } from "../lib/schema";
 import { View } from "../components/Themed";
 
 const styles = StyleSheet.create({
@@ -25,31 +25,41 @@ const styles = StyleSheet.create({
 });
 
 const HomeScreen = ({ navigation }: RootTabScreenProps<"Home">) => {
-    const [hasFetched, setFetched] = useState(false);
+    const [isFetching, setFetching] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
-    const [posts, setPosts] = useState<Post[]>([]);
+    const [shifts, setshifts] = useState<Shift[]>([]);
 
     const onRefresh = useCallback(() => {
-        setRefreshing(true);
-    }, []);
+        if (!isFetching) setRefreshing(true);
+    }, [isFetching]);
 
     useEffect(() => {
-        if (!hasFetched || refreshing) {
-            setFetched(true);
-            (async () => {
-                const response = await fetch("http://127.0.0.1:8000/posts");
-                if (response.status != 200) {
-                    console.error(response.text);
-                    setFetched(false);
-                }
+        const fetchData = async () => {
+            const response = await fetch("http://127.0.0.1:8000/shifts");
+            if (!response.ok) {
+                const message = await response.text();
+                console.error(message);
+                Alert.alert(message);
+            }
 
-                const data = await response.json();
-                setPosts(data);
-                setFetched(true);
-                setRefreshing(false);
-            })();
+            const data = await response.json();
+            setshifts(data);
+            setFetching(false);
+            setRefreshing(false);
+        };
+
+        if (isFetching || refreshing) {
+            setFetching(false);
+            fetchData();
         }
-    }, [hasFetched, refreshing, posts]);
+
+        const focusSubscription = navigation.addListener("focus", () => {
+            setRefreshing(true);
+            fetchData();
+        });
+
+        return focusSubscription;
+    }, [isFetching, navigation, refreshing, shifts]);
 
     return (
         <ScrollView
@@ -64,8 +74,8 @@ const HomeScreen = ({ navigation }: RootTabScreenProps<"Home">) => {
                     flex: 1
                 }}
             >
-                {posts.map((post) => (
-                    <PostCard key={post.id} {...post} />
+                {shifts.map((shift) => (
+                    <ShiftCard key={shift.id} {...{ shift }} />
                 ))}
             </View>
         </ScrollView>

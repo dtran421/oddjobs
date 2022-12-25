@@ -1,11 +1,14 @@
-import { StyleSheet, useColorScheme } from "react-native";
+import { useContext, useEffect, useState } from "react";
+import { Alert, StyleSheet, useColorScheme } from "react-native";
 import { Input, Button } from "@rneui/themed";
 import { useThemeColor, View } from "../components/Themed";
 
 import { supabase } from "../lib/supabase";
-import { useContext } from "react";
 import { AuthContext } from "../lib/AuthContext";
 import { StyledText } from "../components/StyledText";
+import ShiftCard from "../components/ShiftCard";
+import { Shift } from "../lib/schema";
+import { RootTabScreenProps } from "../types";
 
 const styles = StyleSheet.create({
     container: {
@@ -22,8 +25,40 @@ const styles = StyleSheet.create({
     }
 });
 
-const AccountScreen = () => {
+const AccountScreen = ({ navigation }: RootTabScreenProps<"Account">) => {
     const { session } = useContext(AuthContext);
+
+    const [isFetching, setFetching] = useState(true);
+    const [shifts, setShifts] = useState<Shift[]>([]);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            const response = await fetch(
+                `http://127.0.0.1:8000/accounts/${session?.user.id}/shifts`
+            );
+            if (!response.ok) {
+                const message = await response.text();
+                console.error(message);
+                Alert.alert(message);
+            }
+
+            const data = await response.json();
+            setShifts(data);
+            setFetching(false);
+        };
+
+        if (isFetching) {
+            setFetching(false);
+            fetchData();
+        }
+
+        const focusSubscription = navigation.addListener("focus", () => {
+            setFetching(true);
+            fetchData();
+        });
+
+        return focusSubscription;
+    }, [isFetching, navigation, session?.user.id]);
 
     return (
         <View
@@ -35,7 +70,7 @@ const AccountScreen = () => {
                 paddingBottom: 20
             }}
         >
-            <View style={[styles.verticallySpaced]}>
+            <View style={styles.verticallySpaced}>
                 <StyledText
                     style={{
                         fontSize: 44,
@@ -52,6 +87,26 @@ const AccountScreen = () => {
                     disabled
                     disabledInputStyle={{ color: "white" }}
                 />
+            </View>
+            <View
+                style={[
+                    styles.verticallySpaced,
+                    { flex: 1, justifyContent: "flex-start" }
+                ]}
+            >
+                <StyledText
+                    style={{
+                        fontSize: 24,
+                        fontWeight: "600",
+                        marginLeft: 12,
+                        marginTop: 10
+                    }}
+                >
+                    Upcoming Shifts
+                </StyledText>
+                {shifts.map((shift) => (
+                    <ShiftCard key={shift.id} {...{ shift }} disabled />
+                ))}
             </View>
             <View style={styles.verticallySpaced}>
                 <Button

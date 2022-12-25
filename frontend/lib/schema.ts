@@ -1,4 +1,4 @@
-export interface Post {
+export interface Shift {
     id: string;
     company: string;
     position: string;

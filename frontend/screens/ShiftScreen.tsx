@@ -1,16 +1,16 @@
 import { useContext, useEffect, useState } from "react";
 import { Alert, StyleSheet } from "react-native";
-import { Post } from "../lib/schema";
-
-import { RootStackParamList, RootStackScreenProps } from "../types";
-import { StyledText } from "../components/StyledText";
-import { formatDate, formatShiftLength, formatStartTime } from "../lib/utils";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
-import { View, useThemeColor } from "../components/Themed";
 import { Button, Chip } from "@rneui/themed";
 import { LinearGradient } from "expo-linear-gradient";
+
+import { Shift } from "../lib/schema";
+import { RootStackParamList, RootStackScreenProps } from "../types";
+import { StyledText } from "../components/StyledText";
+import { View, useThemeColor } from "../components/Themed";
+import { formatDate, formatShiftLength, formatStartTime } from "../lib/utils";
 import { AuthContext } from "../lib/AuthContext";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 const styles = StyleSheet.create({
     container: {
@@ -37,24 +37,24 @@ const styles = StyleSheet.create({
     }
 });
 
-const signUpForPost = async (
-    navigation: NativeStackNavigationProp<RootStackParamList, "Post">,
+const signUpForshift = async (
+    navigation: NativeStackNavigationProp<RootStackParamList, "Shift">,
     userId: string,
-    postId: string
+    shiftId: string
 ) => {
-    const response = await fetch(`http://127.0.0.1:8000/posts/${postId}`, {
+    const response = await fetch(`http://127.0.0.1:8000/shift/${shiftId}`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
-            userId,
-            postId
+            userId
         })
     });
 
-    if (response.status != 200) {
-        console.error(response.text);
+    if (!response.ok) {
+        const message = await response.text();
+        console.error(message);
         Alert.alert("Something went wrong with signup!");
         return;
     }
@@ -62,13 +62,13 @@ const signUpForPost = async (
     navigation.goBack();
 };
 
-const PostScreen = ({ route, navigation }: RootStackScreenProps<"Post">) => {
-    const { postId } = route.params;
+const ShiftScreen = ({ route, navigation }: RootStackScreenProps<"Shift">) => {
+    const { shiftId } = route.params;
     const { session } = useContext(AuthContext);
 
     const [isLoading, setLoading] = useState(false);
     const [hasFetched, setFetched] = useState(false);
-    const [postInfo, setPostInfo] = useState<Post>({
+    const [shiftInfo, setshiftInfo] = useState<Shift>({
         id: "",
         company: "",
         position: "",
@@ -85,21 +85,22 @@ const PostScreen = ({ route, navigation }: RootStackScreenProps<"Post">) => {
             setFetched(true);
             (async () => {
                 const response = await fetch(
-                    `http://127.0.0.1:8000/posts/${postId}`
+                    `http://127.0.0.1:8000/shift/${shiftId}`
                 );
-                if (response.status != 200) {
-                    console.error(response.text);
-                    setFetched(false);
+                if (!response.ok) {
+                    const message = await response.text();
+                    console.error(message);
+                    Alert.alert(message);
                 }
 
                 const data = (await response.json())[0];
-                setPostInfo(data);
+                setshiftInfo(data);
                 setFetched(true);
             })();
         }
-    }, [hasFetched, postInfo]);
+    }, [hasFetched, shiftId, shiftInfo]);
 
-    const postSignUp = async () => {
+    const shiftSignUp = async () => {
         if (!session) {
             console.error("user not signed in!");
             navigation.navigate("Login");
@@ -107,7 +108,7 @@ const PostScreen = ({ route, navigation }: RootStackScreenProps<"Post">) => {
         }
 
         setLoading(true);
-        await signUpForPost(navigation, session.user.id, postId);
+        await signUpForshift(navigation, session.user.id, shiftId);
         setLoading(false);
     };
 
@@ -119,7 +120,7 @@ const PostScreen = ({ route, navigation }: RootStackScreenProps<"Post">) => {
         shift_length: shiftLength,
         description,
         pay_rate: payRate
-    } = postInfo;
+    } = shiftInfo;
 
     return (
         <View style={styles.container}>
@@ -192,7 +193,7 @@ const PostScreen = ({ route, navigation }: RootStackScreenProps<"Post">) => {
                         borderRadius: 6
                     }}
                     loading={isLoading}
-                    onPress={() => postSignUp()}
+                    onPress={() => shiftSignUp()}
                 >
                     <Feather
                         name="edit-3"
@@ -200,11 +201,11 @@ const PostScreen = ({ route, navigation }: RootStackScreenProps<"Post">) => {
                         color="black"
                         style={{ marginRight: 10 }}
                     />
-                    I'll take it!
+                    I&apos;ll take it!
                 </Button>
             </View>
         </View>
     );
 };
 
-export default PostScreen;
+export default ShiftScreen;

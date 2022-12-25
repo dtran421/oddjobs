@@ -32,7 +32,7 @@ const linking: LinkingOptions<RootStackParamList> = {
                     }
                 }
             },
-            Post: "post",
+            Shift: "shift",
             Login: "login",
             Modal: "modal",
             NotFound: "*"

@@ -27,8 +27,8 @@ const Login = () => {
         setLoading(true);
 
         const { error } = await supabase.auth.signInWithPassword({
-            email: email,
-            password: password
+            email,
+            password
         });
         if (error) Alert.alert(error.message);
 
@@ -39,8 +39,8 @@ const Login = () => {
         setLoading(true);
 
         const { error } = await supabase.auth.signUp({
-            email: email,
-            password: password
+            email,
+            password
         });
         if (error) Alert.alert(error.message);
 
@@ -73,7 +73,7 @@ const Login = () => {
                     leftIconContainerStyle={{ marginRight: 10 }}
                     onChangeText={(text) => setEmail(text)}
                     value={email}
-                    autoCapitalize={"none"}
+                    autoCapitalize="none"
                 />
             </View>
             <View style={styles.verticallySpaced}>
@@ -88,8 +88,8 @@ const Login = () => {
                     inputStyle={{ color: useThemeColor({}, "text") }}
                     onChangeText={(text) => setPassword(text)}
                     value={password}
-                    secureTextEntry={true}
-                    autoCapitalize={"none"}
+                    secureTextEntry
+                    autoCapitalize="none"
                 />
             </View>
             <View style={[styles.verticallySpaced, styles.mt20]}>

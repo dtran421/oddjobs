@@ -4,7 +4,7 @@ VALUES ('Walmart'),
     ('XYZ Corp.'),
     ('ACE Hardware');
 
-INSERT INTO public.posts (
+INSERT INTO public.shifts (
         company,
         position,
         date,
@@ -41,16 +41,16 @@ VALUES (
         '$20/hour'
     );
 
-UPDATE public.posts
+UPDATE public.shifts
 SET company_id = (
         SELECT id
         FROM public.companies
-        WHERE company_name = posts.company
+        WHERE company_name = shifts.company
     );
 
--- inserts a row into public.users
+-- inserts a row into public.accounts
 CREATE OR REPLACE FUNCTION public.handle_new_user() RETURNS TRIGGER AS $$ BEGIN
-INSERT INTO public.users (id, email)
+INSERT INTO public.accounts (id, email)
 VALUES (new.id, new.email);
 
 RETURN new;

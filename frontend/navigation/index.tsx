@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, ComponentProps } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import {
     NavigationContainer,
@@ -16,7 +16,7 @@ import AccountScreen from "../screens/AccountScreen";
 import ModalScreen from "../screens/ModalScreen";
 import NotFoundScreen from "../screens/NotFoundScreen";
 import HomeScreen from "../screens/HomeScreen";
-import PostScreen from "../screens/PostScreen";
+import ShiftScreen from "../screens/ShiftScreen";
 import TabTwoScreen from "../screens/TabTwoScreen";
 import {
     RootStackParamList,
@@ -28,75 +28,13 @@ import { supabase } from "../lib/supabase";
 import Login from "../screens/LoginScreen";
 import { AuthContext } from "../lib/AuthContext";
 
-const Navigation = ({ colorScheme }: { colorScheme: ColorSchemeName }) => {
-    return (
-        <NavigationContainer
-            linking={LinkingConfiguration}
-            theme={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-        >
-            <RootNavigator />
-        </NavigationContainer>
-    );
-};
-
-const Stack = createNativeStackNavigator<RootStackParamList>();
-
-const RootNavigator = () => {
-    const [session, setSession] = useState<Session | null>(null);
-
-    useEffect(() => {
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            setSession(session);
-        });
-
-        supabase.auth.onAuthStateChange((_event, session) => {
-            setSession(session);
-        });
-    }, []);
-
-    const authContext = useMemo(
-        () => ({
-            session
-        }),
-        [session]
-    );
-
-    return (
-        <AuthContext.Provider value={authContext}>
-            <Stack.Navigator>
-                {session?.user ? (
-                    <>
-                        <Stack.Screen
-                            name="Root"
-                            component={BottomTabNavigator}
-                            options={{ headerShown: false }}
-                        />
-                        <Stack.Screen name="Post" component={PostScreen} />
-                    </>
-                ) : (
-                    <Stack.Screen
-                        name="Login"
-                        component={Login}
-                        options={{
-                            headerShown: false,
-                            animationTypeForReplace: session?.user
-                                ? "pop"
-                                : "push"
-                        }}
-                    />
-                )}
-                <Stack.Screen
-                    name="NotFound"
-                    component={NotFoundScreen}
-                    options={{ title: "Oops!" }}
-                />
-                <Stack.Group screenOptions={{ presentation: "modal" }}>
-                    <Stack.Screen name="Modal" component={ModalScreen} />
-                </Stack.Group>
-            </Stack.Navigator>
-        </AuthContext.Provider>
-    );
-};
+/**
+ * You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
+ */
+const TabBarIcon = (props: {
+    name: ComponentProps<typeof Feather>["name"];
+    color: string;
+}) => <Feather size={30} style={{ marginBottom: -3 }} {...props} />;
 
 /**
  * A bottom tab navigator displays tab buttons on the bottom of the display to switch screens.
@@ -164,12 +102,76 @@ const BottomTabNavigator = () => {
     );
 };
 
-/**
- * You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
- */
-const TabBarIcon = (props: {
-    name: React.ComponentProps<typeof Feather>["name"];
-    color: string;
-}) => <Feather size={30} style={{ marginBottom: -3 }} {...props} />;
+const Stack = createNativeStackNavigator<RootStackParamList>();
+
+const RootNavigator = () => {
+    const [session, setSession] = useState<Session | null>(null);
+
+    useEffect(() => {
+        supabase.auth
+            .getSession()
+            .then(({ data: { session: userSession } }) => {
+                setSession(userSession);
+            });
+
+        supabase.auth.onAuthStateChange((_event, userSession) => {
+            setSession(userSession);
+        });
+    }, []);
+
+    const authContext = useMemo(
+        () => ({
+            session
+        }),
+        [session]
+    );
+
+    return (
+        <AuthContext.Provider value={authContext}>
+            <Stack.Navigator>
+                {session?.user ? (
+                    <>
+                        <Stack.Screen
+                            name="Root"
+                            component={BottomTabNavigator}
+                            options={{ headerShown: false }}
+                        />
+                        <Stack.Screen name="Shift" component={ShiftScreen} />
+                    </>
+                ) : (
+                    <Stack.Screen
+                        name="Login"
+                        component={Login}
+                        options={{
+                            headerShown: false,
+                            animationTypeForReplace: session?.user
+                                ? "pop"
+                                : "push"
+                        }}
+                    />
+                )}
+                <Stack.Screen
+                    name="NotFound"
+                    component={NotFoundScreen}
+                    options={{ title: "Oops!" }}
+                />
+                <Stack.Group screenOptions={{ presentation: "modal" }}>
+                    <Stack.Screen name="Modal" component={ModalScreen} />
+                </Stack.Group>
+            </Stack.Navigator>
+        </AuthContext.Provider>
+    );
+};
+
+const Navigation = ({ colorScheme }: { colorScheme: ColorSchemeName }) => {
+    return (
+        <NavigationContainer
+            linking={LinkingConfiguration}
+            theme={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+        >
+            <RootNavigator />
+        </NavigationContainer>
+    );
+};
 
 export default Navigation;

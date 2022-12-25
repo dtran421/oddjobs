@@ -4,31 +4,39 @@ import { Card } from "@rneui/themed";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 
-import { Post } from "../lib/schema";
+import { Shift } from "../lib/schema";
 import { View, useThemeColor } from "./Themed";
 import { StyledText } from "./StyledText";
 import { formatDate, formatStartTime, formatShiftLength } from "../lib/utils";
 
-const PostCard = ({
-    id,
-    company,
-    position,
-    date,
-    start_time: startTime,
-    shift_length: shiftLength
-}: Post) => {
+const ShiftCard = ({
+    shift: {
+        id,
+        company,
+        position,
+        date,
+        start_time: startTime,
+        shift_length: shiftLength
+    },
+    disabled = false
+}: {
+    shift: Shift;
+    disabled?: boolean;
+}) => {
     const navigation = useNavigation();
 
     return (
         <TouchableOpacity
-            onPress={() => navigation.navigate("Post", { postId: id })}
+            onPress={() =>
+                !disabled && navigation.navigate("Shift", { shiftId: id })
+            }
         >
             <Card
                 containerStyle={{
                     borderColor: useThemeColor({}, "background"),
                     borderRadius: 8,
                     padding: 0,
-                    marginTop: 20
+                    marginBottom: 20
                 }}
             >
                 <LinearGradient
@@ -88,4 +96,4 @@ const PostCard = ({
     );
 };
 
-export default PostCard;
+export default ShiftCard;
